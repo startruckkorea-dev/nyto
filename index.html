@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NYTO Guest WiFi — Star Truck Korea</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    background: rgba(255,255,255,0.97);
+    border-radius: 20px;
+    padding: 36px 32px 28px;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    text-align: center;
+  }
+  .logo-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .logo-badge {
+    background: #1A2454;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: .5px;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 22px;
+  }
+  .ssid-row {
+    background: #f0f6ff;
+    border: 1.5px solid #c7d8f5;
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .ssid-label { font-size: 12px; color: #64748b; }
+  .ssid-value { font-size: 18px; font-weight: 800; color: #1A2454; letter-spacing: 1px; }
+  .qr-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+  #qr-canvas {
+    border-radius: 12px;
+    border: 3px solid #e2e8f0;
+    display: block;
+  }
+  .pw-section {
+    background: linear-gradient(135deg, #1A2454, #2d4a8a);
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+  .pw-label { font-size: 11px; color: rgba(255,255,255,.65); margin-bottom: 4px; letter-spacing: .5px; }
+  .pw-value { font-size: 22px; font-weight: 800; letter-spacing: 2px; color: #fff; }
+  .month-badge {
+    display: inline-block;
+    background: rgba(255,255,255,.15);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 11px;
+    color: rgba(255,255,255,.8);
+    margin-top: 6px;
+  }
+  .info-box {
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #92400e;
+    margin-bottom: 16px;
+    line-height: 1.6;
+    text-align: left;
+  }
+  .info-box b { color: #78350f; }
+  .steps {
+    text-align: left;
+    font-size: 12.5px;
+    color: #475569;
+    line-height: 1.8;
+    margin-bottom: 18px;
+    padding: 0 4px;
+  }
+  .steps li { margin-left: 16px; }
+  .footer {
+    font-size: 11px;
+    color: #94a3b8;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 14px;
+  }
+  .copy-btn {
+    background: #1A2454;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background .2s;
+    font-family: inherit;
+  }
+  .copy-btn:active { background: #2d4a8a; }
+  .copied { background: #16a34a !important; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo-row">
+    <span class="logo-badge">STAR TRUCK KOREA</span>
+  </div>
+  <div class="subtitle">Seoul HQ — Guest WiFi</div>
+
+  <div class="ssid-row">
+    <span class="ssid-label">SSID</span>
+    <span class="ssid-value">NYTO</span>
+  </div>
+
+  <div class="qr-wrap">
+    <canvas id="qr-canvas" width="200" height="200"></canvas>
+  </div>
+
+  <div class="pw-section">
+    <div class="pw-label">이번 달 패스워드</div>
+    <div class="pw-value" id="pw-display">—</div>
+    <div class="month-badge" id="month-display">—</div>
+  </div>
+
+  <button class="copy-btn" onclick="copyPw()" id="copy-btn">📋 패스워드 복사</button>
+
+  <div class="info-box" style="margin-top:14px">
+    <b>⚠️ 매월 1일 패스워드가 변경됩니다.</b><br>
+    기존에 저장된 NYTO 연결을 <b>완전히 삭제</b> 후<br>
+    새 패스워드로 다시 연결해주세요.
+  </div>
+
+  <ol class="steps">
+    <li>QR코드를 카메라로 스캔</li>
+    <li>자동으로 WiFi 연결 시도</li>
+    <li>연결 안 되면 위 패스워드 직접 입력</li>
+  </ol>
+
+  <div class="footer">
+    Star Truck Korea IT Dept. &nbsp;·&nbsp; stk_it@hyosung.com
+  </div>
+</div>
+
+<!-- QR 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_KO = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+function getPassword(date) {
+  const m = date.getMonth();       // 0-based
+  const y = date.getFullYear();
+  const mm = String(m + 1).padStart(2, '0');
+  return MONTHS[m] + y + '@' + mm;
+}
+
+function init() {
+  const now = new Date();
+  const pw = getPassword(now);
+  const m = now.getMonth();
+  const y = now.getFullYear();
+
+  document.getElementById('pw-display').textContent = pw;
+  document.getElementById('month-display').textContent = y + '년 ' + MONTH_KO[m];
+
+  // WiFi QR: WPA 형식
+  const wifiStr = 'WIFI:T:WPA;S:NYTO;P:' + pw + ';;';
+
+  // QRCode.js로 canvas에 렌더
+  const canvas = document.getElementById('qr-canvas');
+  new QRCode(canvas, {
+    text: wifiStr,
+    width: 200,
+    height: 200,
+    colorDark: '#1A2454',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
+
+function copyPw() {
+  const pw = document.getElementById('pw-display').textContent;
+  navigator.clipboard.writeText(pw).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✅ 복사됨!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 패스워드 복사';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
