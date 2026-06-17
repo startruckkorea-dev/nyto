@@ -41,7 +41,6 @@
   .copy-btn { background:#1A2454; color:#fff; border:none; border-radius:8px; padding:8px 20px; font-size:13px; font-weight:600; cursor:pointer; margin-top:8px; transition:background .2s; font-family:inherit; }
   .copy-btn:active { background:#2d4a8a; }
   .copied { background:#16a34a !important; }
-  .user-row { font-size:11px; color:#94a3b8; margin-bottom:18px; }
 </style>
 </head>
 <body>
@@ -65,8 +64,6 @@
       <span class="logo-badge">STAR TRUCK KOREA</span>
     </div>
     <div class="subtitle">Seoul HQ — Guest WiFi</div>
-    <div class="user-row" id="user-row"></div>
-
     <div class="ssid-row">
       <span class="ssid-label">무선네트워크 ID (SSID)</span>
       <span class="ssid-value">NYTO</span>
@@ -86,11 +83,6 @@
       새 패스워드로 다시 연결해주세요.
     </div>
 
-    <ol class="steps">
-      <li>위 패스워드를 복사</li>
-      <li>WiFi 설정에서 NYTO 선택</li>
-      <li>패스워드 붙여넣기 후 연결</li>
-    </ol>
 
     <div class="footer">
       Star Truck Korea IT Dept. &nbsp;·&nbsp; stk_it@hyosung.com
@@ -138,7 +130,6 @@ function showMain(account) {
 
   document.getElementById('pw-display').textContent    = pw;
   document.getElementById('month-display').textContent = y + '년 ' + MONTH_KO[m];
-  document.getElementById('user-row').textContent      = '👤 ' + (account.name || account.username);
 }
 
 function copyPw() {
