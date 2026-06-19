@@ -38,6 +38,10 @@
   .pw-box { background: #1A2454; border-radius: 10px; padding: 16px 20px; margin-bottom: 14px; text-align:center; }
   .pw-label { font-size: 10px; color: rgba(255,255,255,.5); margin-bottom: 6px; letter-spacing: .5px; }
   .pw-value { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: 2px; }
+  .pw-value.blurred { filter: blur(6px); cursor: pointer; user-select: none; transition: filter .3s; }
+  .pw-value.blurred:hover { filter: blur(4px); }
+  .pw-reveal-hint { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 6px; cursor: pointer; }
+  .pw-reveal-hint.hidden { display: none; }
   .pw-month { font-size: 11px; color: rgba(255,255,255,.45); margin-top: 5px; }
   .copy-btn { width:100%; padding: 10px; background: #0078d4; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background .2s; margin-bottom: 14px; }
   .copy-btn:hover { background: #106ebe; }
@@ -76,8 +80,9 @@
 
     <div class="pw-box">
       <div class="pw-label">이번 달 패스워드</div>
-      <div class="pw-value" id="pw-display">—</div>
+      <div class="pw-value blurred" id="pw-display" onclick="revealPw()" title="클릭하여 확인">—</div>
       <div class="pw-month" id="month-display">—</div>
+      <div class="pw-reveal-hint" id="pw-hint" onclick="revealPw()">🔒 클릭하여 패스워드 확인</div>
     </div>
 
     <button class="copy-btn" onclick="copyPw()" id="copy-btn">패스워드 복사</button>
@@ -128,7 +133,15 @@ function showMain() {
   document.getElementById('month-display').textContent = y + '년 ' + MONTH_KO[m];
 }
 
+function revealPw() {
+  const el = document.getElementById('pw-display');
+  const hint = document.getElementById('pw-hint');
+  if (el) { el.classList.remove('blurred'); el.onclick = null; el.style.cursor = 'default'; }
+  if (hint) hint.classList.add('hidden');
+}
+
 function copyPw() {
+  revealPw();
   const pw = document.getElementById('pw-display').textContent;
   const btn = document.getElementById('copy-btn');
   navigator.clipboard.writeText(pw).then(() => {
