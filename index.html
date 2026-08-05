@@ -152,7 +152,7 @@
       <button class="copy-btn vpn" onclick="copyPw('vpn-display','vpn-copy-btn')" id="vpn-copy-btn">패스워드 복사</button>
 
       <div class="notice">
-        ⚠️ 매월 1일 Pre-shared Key가 변경됩니다.<br>
+        ⚠️ 매월 1일 Pre-shared Key가 변경됩니다. <span id="vpn-next-date" style="font-weight:600"></span><br>
         기존 VPN 연결 프로필의 Pre-shared Key를 새 값으로 갱신해주세요.
       </div>
 
@@ -360,6 +360,12 @@ async function showMain() {
   const vpn = getVpnPassword(0);
   document.getElementById('vpn-display').textContent = vpn.pw;
   document.getElementById('vpn-month-display').textContent = vpn.y + '년 ' + MONTH_KO[vpn.m];
+
+  const vpnNext = getVpnPassword(1);
+  const nextDateEl = document.getElementById('vpn-next-date');
+  if (nextDateEl) {
+    nextDateEl.textContent = `(${vpnNext.y}.${String(vpnNext.m + 1).padStart(2, '0')}.01 부로 적용됩니다)`;
+  }
 
   // IT_CONTACT 이메일 + 관리자 여부 로드 (실패해도 화면엔 영향 없도록 별도 처리)
   loadSystemConfig().then(cfg => {
