@@ -72,8 +72,8 @@
   .footer-copy { font-size: 10.5px; color: #c4c4c4; }
 
   /* ── Admin ── */
-  #admin-screen { display:none; width:100%; max-width:640px; margin:0 auto; }
-  .admin-card { background:#fff; border-radius:12px; padding:28px 28px 22px; box-shadow:0 2px 12px rgba(0,0,0,.06); }
+  #admin-screen { display:none; width:100%; max-width:900px; }
+  .admin-card { background:#fff; border-radius:12px; padding:28px 28px 22px; box-shadow:0 2px 12px rgba(0,0,0,.06); max-width:640px; position:relative; }
   .admin-title { font-size:15px; font-weight:800; color:#101B34; margin-bottom:4px; }
   .admin-sub { font-size:11.5px; color:#94a3b8; margin-bottom:18px; }
   .admin-table { width:100%; border-collapse:collapse; margin-bottom:18px; }
@@ -183,14 +183,11 @@
     <span class="footer-copy" style="color:#64748b">문의: <span id="shared-contact-email">stk_it@hyosung.com</span></span>
   </div>
 
-  <div class="main-page-footer">
-    © 2026 Star Truck Korea · STK NW<span style="display:inline-block;width:18px"></span>This system is internally developed by Star Truck Korea IT Dept. Unauthorized access is strictly prohibited.
-  </div>
-
   <!-- Admin -->
   <div id="admin-screen">
     <div class="admin-card">
-      <div class="admin-title">🔑 관리자 — 이번달 · 다음달 패스워드</div>
+      <button class="btn-back" onclick="closeAdmin()" style="position:absolute;top:20px;right:20px">← 돌아가기</button>
+      <div class="admin-title" style="padding-right:100px">🔑 관리자 — 이번달 · 다음달 패스워드</div>
       <div class="admin-sub">IT 관리자만 접근 가능하며, 화면 공유에 주의해주시기 바랍니다.</div>
       <table class="admin-table">
         <tr><th>구분</th><th>대상 월</th><th>패스워드</th></tr>
@@ -199,8 +196,11 @@
         <tr><td><span class="admin-badge vpn">VPN</span>STK VPN</td><td id="a-vpn-cur-m">—</td><td class="pw" id="a-vpn-cur">—</td></tr>
         <tr><td><span class="admin-badge vpn">VPN</span>STK VPN</td><td id="a-vpn-next-m">—</td><td class="pw" id="a-vpn-next">—</td></tr>
       </table>
-      <button class="btn-back" onclick="closeAdmin()">← 돌아가기</button>
     </div>
+  </div>
+
+  <div class="main-page-footer">
+    © 2026 Star Truck Korea · STK NW<span style="display:inline-block;width:18px"></span>This system is internally developed by Star Truck Korea IT Dept. Unauthorized access is strictly prohibited.
   </div>
 </div>
 
