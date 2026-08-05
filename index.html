@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NYTO Guest WiFi — Star Truck Korea</title>
+<title>NYTO Guest WiFi & STK VPN — Star Truck Korea</title>
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.0/lib/msal-browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; background: #f3f2f1; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
@@ -21,7 +22,12 @@
   #login-err { color:#e53e3e; font-size:.78rem; margin-top:10px; display:none; }
 
   /* ── Main ── */
-  #main-screen { display:none; width:100%; align-items:center; justify-content:center; min-height:100vh; }
+  #main-screen { display:none; width:100%; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:24px 16px; }
+  .top-actions { width:100%; max-width:900px; display:flex; justify-content:flex-end; margin-bottom:12px; }
+  .btn-admin { background:#1A2454; color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:.78rem; font-weight:600; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; }
+  .btn-admin:hover { background:#111a3d; }
+
+  .cards-row { display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start; justify-content:center; max-width:900px; width:100%; }
   .card {
     background: #fff;
     border-radius: 12px;
@@ -36,19 +42,35 @@
   .ssid-label { font-size: 11px; color: #94a3b8; }
   .ssid-value { font-size: 15px; font-weight: 800; color: #1A2454; letter-spacing: 1px; }
   .pw-box { background: #1A2454; border-radius: 10px; padding: 16px 20px; margin-bottom: 14px; text-align:center; }
+  .pw-box.vpn { background: #0f3d2e; }
   .pw-label { font-size: 10px; color: rgba(255,255,255,.5); margin-bottom: 6px; letter-spacing: .5px; }
-  .pw-value { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: 2px; }
+  .pw-value { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: 2px; word-break: break-all; }
   .pw-value.blurred { filter: blur(6px); cursor: pointer; user-select: none; transition: filter .3s; }
   .pw-value.blurred:hover { filter: blur(4px); }
   .pw-reveal-hint { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 6px; cursor: pointer; }
   .pw-reveal-hint.hidden { display: none; }
   .pw-month { font-size: 11px; color: rgba(255,255,255,.45); margin-top: 5px; }
   .copy-btn { width:100%; padding: 10px; background: #0078d4; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background .2s; margin-bottom: 14px; }
+  .copy-btn.vpn { background: #16794f; }
   .copy-btn:hover { background: #106ebe; }
+  .copy-btn.vpn:hover { background: #125f3e; }
   .copied { background: #16a34a !important; }
   .notice { font-size: 11.5px; color: #78350f; background: #fef9ec; border-left: 3px solid #f59e0b; border-radius: 6px; padding: 9px 12px; line-height: 1.7; margin-bottom: 16px; }
   .footer-row { display:flex; align-items:center; justify-content:space-between; border-top: 1px solid #f1f5f9; padding-top: 14px; }
   .footer-copy { font-size: 10.5px; color: #c4c4c4; }
+
+  /* ── Admin ── */
+  #admin-screen { display:none; width:100%; max-width:640px; margin:0 auto; }
+  .admin-card { background:#fff; border-radius:12px; padding:28px 28px 22px; box-shadow:0 2px 12px rgba(0,0,0,.08); }
+  .admin-title { font-size:15px; font-weight:800; color:#1A2454; margin-bottom:4px; }
+  .admin-sub { font-size:11.5px; color:#94a3b8; margin-bottom:18px; }
+  .admin-table { width:100%; border-collapse:collapse; margin-bottom:18px; }
+  .admin-table th { text-align:left; font-size:10.5px; color:#94a3b8; padding:6px 8px; border-bottom:1px solid #eef1f5; }
+  .admin-table td { font-size:13px; padding:9px 8px; border-bottom:1px solid #f5f7fa; color:#1A2454; }
+  .admin-table td.pw { font-weight:800; font-family:Consolas, monospace; letter-spacing:.5px; }
+  .admin-badge { display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:5px; background:#eef2ff; color:#4338ca; margin-right:6px; }
+  .btn-back { background:#f1f5f9; color:#334155; border:none; border-radius:8px; padding:9px 16px; font-size:.78rem; font-weight:600; cursor:pointer; font-family:inherit; }
+  .btn-back:hover { background:#e2e8f0; }
 </style>
 </head>
 <body>
@@ -57,44 +79,99 @@
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">🛜</div>
-    <div class="login-title">Guest WiFi</div>
+    <div class="login-title">Guest WiFi & STK VPN</div>
     <div class="login-co">Star Truck Korea — Seoul HQ</div>
     <button class="btn-login" id="btn-login" onclick="signIn()" disabled>로딩 중...</button>
-    <div style="font-size:.72rem;color:#555;margin-top:20px;text-align:center">© Star Truck Korea · Guest WiFi</div>
+    <div style="font-size:.72rem;color:#555;margin-top:20px;text-align:center">© Star Truck Korea · Guest WiFi & VPN</div>
     <div id="login-err"></div>
   </div>
 </div>
 
 <!-- Main -->
 <div id="main-screen">
-  <div class="card">
-    <div class="card-header">
-      <span>🛜 Seoul HQ — Guest WiFi</span>
-      <b>STAR TRUCK KOREA</b>
+  <div class="top-actions">
+    <button class="btn-admin" id="btn-admin-open" onclick="openAdmin()" style="display:none">🔑 관리자 보기</button>
+  </div>
+
+  <div class="cards-row">
+    <!-- Guest WiFi -->
+    <div class="card">
+      <div class="card-header">
+        <span>🛜 Seoul HQ — Guest WiFi</span>
+        <b>STAR TRUCK KOREA</b>
+      </div>
+
+      <div class="ssid-row">
+        <span class="ssid-label">무선네트워크 ID (SSID):</span>
+        <span class="ssid-value">NYTO</span>
+      </div>
+
+      <div class="pw-box">
+        <div class="pw-label">이번 달 패스워드</div>
+        <div class="pw-value blurred" id="pw-display" onclick="revealPw('pw-display','pw-hint')" title="클릭하여 확인">—</div>
+        <div class="pw-month" id="month-display">—</div>
+        <div class="pw-reveal-hint" id="pw-hint" onclick="revealPw('pw-display','pw-hint')">🔒 클릭하여 패스워드 확인</div>
+      </div>
+
+      <button class="copy-btn" onclick="copyPw('pw-display','copy-btn')" id="copy-btn">패스워드 복사</button>
+
+      <div class="notice">
+        ⚠️ 매월 1일 패스워드가 변경됩니다.<br>
+        기존 NYTO 연결을 지운(Forget) 다음, 새 패스워드로 다시 연결해주세요.
+      </div>
+
+      <div class="footer-row">
+        <span class="footer-copy">문의: <span id="wifi-contact-email">stk_it@hyosung.com</span></span>
+        <a href="https://aps.startruckkorea.com/" target="_self" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#0078d4;color:#fff;border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:600;font-family:'Segoe UI',sans-serif;" onmouseover="this.style.background='#106ebe'" onmouseout="this.style.background='#0078d4'"><span>📬</span><span>돌아가기</span></a>
+      </div>
     </div>
 
-    <div class="ssid-row">
-      <span class="ssid-label">무선네트워크 ID (SSID):</span>
-      <span class="ssid-value">NYTO</span>
+    <!-- STK VPN -->
+    <div class="card">
+      <div class="card-header">
+        <span>🔐 Seoul HQ — STK VPN</span>
+        <b>STAR TRUCK KOREA</b>
+      </div>
+
+      <div class="ssid-row">
+        <span class="ssid-label">VPN 접속 정보:</span>
+        <span class="ssid-value">STK VPN</span>
+      </div>
+
+      <div class="pw-box vpn">
+        <div class="pw-label">이번 달 VPN 2차 인증 비밀번호 (Pre-shared Key)</div>
+        <div class="pw-value blurred" id="vpn-display" onclick="revealPw('vpn-display','vpn-hint')" title="클릭하여 확인">—</div>
+        <div class="pw-month" id="vpn-month-display">—</div>
+        <div class="pw-reveal-hint" id="vpn-hint" onclick="revealPw('vpn-display','vpn-hint')">🔒 클릭하여 패스워드 확인</div>
+      </div>
+
+      <button class="copy-btn vpn" onclick="copyPw('vpn-display','vpn-copy-btn')" id="vpn-copy-btn">패스워드 복사</button>
+
+      <div class="notice">
+        ⚠️ 매월 1일 Pre-shared Key가 변경됩니다.<br>
+        기존 VPN 연결 프로필의 Pre-shared Key를 새 값으로 갱신해주세요.
+      </div>
+
+      <div class="footer-row">
+        <span class="footer-copy">문의: <span id="vpn-contact-email">stk_it@hyosung.com</span></span>
+        <a href="https://aps.startruckkorea.com/" target="_self" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#16794f;color:#fff;border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:600;font-family:'Segoe UI',sans-serif;" onmouseover="this.style.background='#125f3e'" onmouseout="this.style.background='#16794f'"><span>📬</span><span>돌아가기</span></a>
+      </div>
     </div>
+  </div>
 
-    <div class="pw-box">
-      <div class="pw-label">이번 달 패스워드</div>
-      <div class="pw-value blurred" id="pw-display" onclick="revealPw()" title="클릭하여 확인">—</div>
-      <div class="pw-month" id="month-display">—</div>
-      <div class="pw-reveal-hint" id="pw-hint" onclick="revealPw()">🔒 클릭하여 패스워드 확인</div>
-    </div>
-
-    <button class="copy-btn" onclick="copyPw()" id="copy-btn">패스워드 복사</button>
-
-    <div class="notice">
-      ⚠️ 매월 1일 패스워드가 변경됩니다.<br>
-      기존 NYTO 연결을 지운(Forget) 다음, 새 패스워드로 다시 연결해주세요.
-    </div>
-
-    <div class="footer-row">
-      <span class="footer-copy">문의: stk_it@hyosung.com</span>
-      <a href="https://aps.startruckkorea.com/" target="_self" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#0078d4;color:#fff;border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:600;font-family:'Segoe UI',sans-serif;" onmouseover="this.style.background='#106ebe'" onmouseout="this.style.background='#0078d4'"><span>📬</span><span>돌아가기</span></a>
+  <!-- Admin -->
+  <div id="admin-screen">
+    <div class="admin-card">
+      <div class="admin-title">🔑 관리자 — 이번달 · 다음달 패스워드</div>
+      <div class="admin-sub">IT_ADMIN_1~4 등록자만 접근 가능합니다. 화면 캡처/공유 시 주의해주세요.</div>
+      <table class="admin-table">
+        <tr><th>구분</th><th>대상 월</th><th>패스워드</th></tr>
+        <tr><td><span class="admin-badge">WiFi</span>NYTO</td><td id="a-wifi-cur-m">—</td><td class="pw" id="a-wifi-cur">—</td></tr>
+        <tr><td><span class="admin-badge">WiFi</span>NYTO</td><td id="a-wifi-next-m">—</td><td class="pw" id="a-wifi-next">—</td></tr>
+        <tr><td><span class="admin-badge" style="background:#dcfce7;color:#166534">VPN</span>STK VPN</td><td id="a-vpn-cur-m">—</td><td class="pw" id="a-vpn-cur">—</td></tr>
+        <tr><td><span class="admin-badge" style="background:#dcfce7;color:#166534">VPN</span>STK VPN</td><td id="a-vpn-next-m">—</td><td class="pw" id="a-vpn-next">—</td></tr>
+      </table>
+      <button class="btn-back" onclick="closeAdmin()">← 돌아가기</button>
     </div>
   </div>
 </div>
@@ -102,21 +179,40 @@
 <script>
 const CLIENT_ID = '432976c2-b43a-492e-8213-ece505fa1f51';
 const TENANT_ID = '19cab1f5-21f4-44df-8ac6-96d6ca595203';
+const GRAPH     = 'https://graph.microsoft.com/v1.0';
+const SITE_PATH = 'startruckkorea.sharepoint.com:/sites/STK-DB:';
 const MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_KO  = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-let msal_g = null;
+const ADMIN_KEYS = ['IT_ADMIN_1','IT_ADMIN_2','IT_ADMIN_3','IT_ADMIN_4'];
 
-function getPassword() {
+let msal_g = null, user = null, siteId = null, driveId = null, _sysConfig = null, _adminEmails = [];
+
+// ── 월별 결정론적 패스워드 생성 (offset: 0=이번달, 1=다음달) ──
+function getWifiPassword(offset) {
+  offset = offset || 0;
   const now = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
-  const m = now.getUTCMonth(), y = now.getUTCFullYear();
+  let m = now.getUTCMonth() + offset, y = now.getUTCFullYear();
+  while (m > 11) { m -= 12; y += 1; }
+  while (m < 0) { m += 12; y -= 1; }
   return { pw: MONTHS[m] + y + '@' + String(m+1).padStart(2,'0'), m, y };
+}
+// VPN Pre-shared Key: 최대 9자 제한에 맞춰 WiFi와 다른 짧은 포맷 사용 (예: Aug26#08 = 8자)
+function getVpnPassword(offset) {
+  offset = offset || 0;
+  const now = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+  let m = now.getUTCMonth() + offset, y = now.getUTCFullYear();
+  while (m > 11) { m -= 12; y += 1; }
+  while (m < 0) { m += 12; y -= 1; }
+  const yy = String(y).slice(-2);
+  return { pw: MONTHS[m] + yy + '#' + String(m+1).padStart(2,'0'), m, y };
 }
 
 async function signIn() {
   try {
     if (window !== window.top) { window.open(window.location.href,'_blank'); return; }
-    const r = await msal_g.loginPopup({ scopes: ['User.Read'] });
+    const r = await msal_g.loginPopup({ scopes: ['User.Read','Sites.ReadWrite.All'] });
     msal_g.setActiveAccount(r.account);
+    user = r.account;
     showMain();
   } catch(e) {
     const el = document.getElementById('login-err');
@@ -124,31 +220,129 @@ async function signIn() {
   }
 }
 
-function showMain() {
+async function token() {
+  const account = msal_g.getActiveAccount();
+  try {
+    const r = await msal_g.acquireTokenSilent({ scopes: ['User.Read','Sites.ReadWrite.All'], account });
+    return r.accessToken;
+  } catch(e) {
+    const r = await msal_g.acquireTokenPopup({ scopes: ['User.Read','Sites.ReadWrite.All'] });
+    return r.accessToken;
+  }
+}
+async function api(path, method='GET', body=null) {
+  const t = await token();
+  const opts = { method, headers: { Authorization: 'Bearer ' + t, 'Content-Type': 'application/json', Prefer: 'HonorNonIndexedQueriesWarningMayFailRandomly' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(GRAPH + path, opts);
+  if (!res.ok) { const t2 = await res.text(); throw new Error(res.status + ' ' + t2); }
+  return res.status === 204 ? null : res.json();
+}
+
+// ── system_config_final.xlsx 로드 (GW 등과 동일 패턴) ──
+async function loadSystemConfig() {
+  if (_sysConfig) return _sysConfig;
+  try {
+    const site = await api('/sites/' + SITE_PATH);
+    siteId = site.id;
+    const drivesRes = await api('/sites/' + siteId + '/drives');
+    let docDrive = (drivesRes.value || []).find(d => ['Documents','문서','Shared Documents'].includes(d.name));
+    if (!docDrive && drivesRes.value && drivesRes.value.length) docDrive = drivesRes.value[0];
+    driveId = docDrive.id;
+    const t = await token();
+    const res = await fetch(GRAPH + '/drives/' + driveId + '/root:/system_config_final.xlsx:/content',
+      { headers: { Authorization: 'Bearer ' + t } });
+    if (!res.ok) throw new Error('system_config_final.xlsx not found');
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(buf, { type: 'array' });
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+    const cfg = {};
+    rows.forEach(row => {
+      const key = (row[0] || '').toString().trim();
+      if (!key || key.startsWith('[') || key.startsWith('■') || key === '설정 KEY' || key.startsWith('이 파일') || key.startsWith('STK Korea')) return;
+      cfg[key] = { name: (row[1] || '').toString().trim(), email: (row[2] || '').toString().trim() };
+    });
+    _sysConfig = cfg;
+    return cfg;
+  } catch(e) {
+    console.warn('[Config] system_config_final.xlsx 로드 실패, 기본값 사용:', e.message);
+    return null;
+  }
+}
+function cfgVal(cfg, key, defaultObj) {
+  if (!cfg || !cfg[key]) return defaultObj;
+  const v = cfg[key];
+  return { ...defaultObj, name: v.name || defaultObj.name, email: v.email || defaultObj.email };
+}
+
+async function showMain() {
   document.getElementById('login-screen').style.display = 'none';
   const ms = document.getElementById('main-screen');
   ms.style.display = 'flex';
-  const { pw, m, y } = getPassword();
-  document.getElementById('pw-display').textContent = pw;
-  document.getElementById('month-display').textContent = y + '년 ' + MONTH_KO[m];
+
+  const wifi = getWifiPassword(0);
+  document.getElementById('pw-display').textContent = wifi.pw;
+  document.getElementById('month-display').textContent = wifi.y + '년 ' + MONTH_KO[wifi.m];
+
+  const vpn = getVpnPassword(0);
+  document.getElementById('vpn-display').textContent = vpn.pw;
+  document.getElementById('vpn-month-display').textContent = vpn.y + '년 ' + MONTH_KO[vpn.m];
+
+  // IT_CONTACT 이메일 + 관리자 여부 로드 (실패해도 화면엔 영향 없도록 별도 처리)
+  loadSystemConfig().then(cfg => {
+    const contact = cfgVal(cfg, 'IT_CONTACT', { email: 'stk_it@hyosung.com' });
+    document.getElementById('wifi-contact-email').textContent = contact.email || 'stk_it@hyosung.com';
+    document.getElementById('vpn-contact-email').textContent = contact.email || 'stk_it@hyosung.com';
+
+    _adminEmails = ADMIN_KEYS
+      .map(k => (cfg && cfg[k] && cfg[k].email || '').toLowerCase().trim())
+      .filter(Boolean);
+    const myEmail = (user.username || user.name || '').toLowerCase().trim();
+    if (_adminEmails.includes(myEmail)) {
+      document.getElementById('btn-admin-open').style.display = 'inline-flex';
+    }
+  });
 }
 
-function revealPw() {
-  const el = document.getElementById('pw-display');
-  const hint = document.getElementById('pw-hint');
+function revealPw(valId, hintId) {
+  const el = document.getElementById(valId);
+  const hint = document.getElementById(hintId);
   if (el) { el.classList.remove('blurred'); el.onclick = null; el.style.cursor = 'default'; }
   if (hint) hint.classList.add('hidden');
 }
 
-function copyPw() {
-  revealPw();
-  const pw = document.getElementById('pw-display').textContent;
-  const btn = document.getElementById('copy-btn');
+function copyPw(valId, btnId) {
+  revealPw(valId, valId === 'pw-display' ? 'pw-hint' : 'vpn-hint');
+  const pw = document.getElementById(valId).textContent;
+  const btn = document.getElementById(btnId);
   navigator.clipboard.writeText(pw).then(() => {
+    const original = btn.textContent;
     btn.textContent = '✅ 복사됨!';
     btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = '패스워드 복사'; btn.classList.remove('copied'); }, 2000);
+    setTimeout(() => { btn.textContent = original === '✅ 복사됨!' ? '패스워드 복사' : original; btn.classList.remove('copied'); }, 2000);
   });
+}
+
+function openAdmin() {
+  document.querySelector('.cards-row').style.display = 'none';
+  document.getElementById('btn-admin-open').style.display = 'none';
+  document.getElementById('admin-screen').style.display = 'block';
+
+  const wc = getWifiPassword(0), wn = getWifiPassword(1);
+  const vc = getVpnPassword(0), vn = getVpnPassword(1);
+  document.getElementById('a-wifi-cur-m').textContent = wc.y + '년 ' + MONTH_KO[wc.m] + ' (이번달)';
+  document.getElementById('a-wifi-cur').textContent = wc.pw;
+  document.getElementById('a-wifi-next-m').textContent = wn.y + '년 ' + MONTH_KO[wn.m] + ' (다음달)';
+  document.getElementById('a-wifi-next').textContent = wn.pw;
+  document.getElementById('a-vpn-cur-m').textContent = vc.y + '년 ' + MONTH_KO[vc.m] + ' (이번달)';
+  document.getElementById('a-vpn-cur').textContent = vc.pw;
+  document.getElementById('a-vpn-next-m').textContent = vn.y + '년 ' + MONTH_KO[vn.m] + ' (다음달)';
+  document.getElementById('a-vpn-next').textContent = vn.pw;
+}
+function closeAdmin() {
+  document.getElementById('admin-screen').style.display = 'none';
+  document.querySelector('.cards-row').style.display = 'flex';
+  document.getElementById('btn-admin-open').style.display = 'inline-flex';
 }
 
 window.addEventListener('load', async () => {
@@ -164,9 +358,9 @@ window.addEventListener('load', async () => {
     await msal_g.initialize();
     clearTimeout(fallback);
     const resp = await msal_g.handleRedirectPromise();
-    if (resp) { msal_g.setActiveAccount(resp.account); showMain(); return; }
+    if (resp) { msal_g.setActiveAccount(resp.account); user = resp.account; showMain(); return; }
     const accounts = msal_g.getAllAccounts();
-    if (accounts.length) { msal_g.setActiveAccount(accounts[0]); showMain(); return; }
+    if (accounts.length) { msal_g.setActiveAccount(accounts[0]); user = accounts[0]; showMain(); return; }
     if (btn) { btn.disabled = false; btn.textContent = 'Hyosung M365 계정으로 로그인'; }
   } catch(e) {
     clearTimeout(fallback);
