@@ -11,22 +11,26 @@
   body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; background: #f3f2f1; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
 
   /* ── Login ── */
-  #login-screen { display:flex; align-items:center; justify-content:center; min-height:100vh; width:100%; background:linear-gradient(145deg,#0f2744 0%,#0078d4 100%); }
+  #login-screen { display:flex; align-items:center; justify-content:center; min-height:100vh; width:100%; background:linear-gradient(145deg,#101B34 0%,#2F7B7A 100%); }
   .login-card { background:#fff; border-radius:20px; padding:52px 48px; text-align:center; box-shadow:0 24px 60px rgba(0,0,0,.22); max-width:400px; width:100%; }
-  .login-logo { width:64px; height:64px; background:linear-gradient(135deg,#0078d4,#00bcf2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.7rem; margin:0 auto 20px; box-shadow:0 8px 20px rgba(0,120,212,.3); }
-  .login-title { font-size:1.2rem; font-weight:700; color:#0f2744; margin-bottom:4px; }
+  .login-logo { width:64px; height:64px; background:linear-gradient(135deg,#2F7B7A,#3d9997); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.7rem; margin:0 auto 20px; box-shadow:0 8px 20px rgba(47,123,122,.3); }
+  .login-title { font-size:1.2rem; font-weight:700; color:#101B34; margin-bottom:4px; }
   .login-co { font-size:.82rem; color:#94a3b8; margin-bottom:28px; }
-  .btn-login { background:linear-gradient(135deg,#0078d4,#005a9e); color:#fff; border:none; border-radius:10px; padding:13px 0; font-size:.92rem; font-weight:600; cursor:pointer; width:100%; font-family:inherit; transition:all .2s; }
-  .btn-login:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,120,212,.4); }
+  .btn-login { background:linear-gradient(135deg,#101B34,#1c2d54); color:#fff; border:none; border-radius:10px; padding:13px 0; font-size:.92rem; font-weight:600; cursor:pointer; width:100%; font-family:inherit; transition:all .2s; }
+  .btn-login:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(16,27,52,.4); }
   .btn-login:disabled { background:#cbd5e0; cursor:not-allowed; transform:none; box-shadow:none; }
   #login-err { color:#e53e3e; font-size:.78rem; margin-top:10px; display:none; }
 
   /* ── Main ── */
   #main-screen { display:none; width:100%; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:24px 16px; }
-  .top-actions { width:100%; max-width:900px; display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-  .page-title { font-size: 13px; font-weight: 800; color: #1A2454; letter-spacing: .3px; }
-  .btn-admin { background:#1A2454; color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:.78rem; font-weight:600; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; }
-  .btn-admin:hover { background:#111a3d; }
+  .top-actions { width:100%; max-width:900px; display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .page-title { font-size: 13px; font-weight: 800; color: #101B34; letter-spacing: .3px; }
+  .pill-group { display:flex; align-items:center; gap:8px; }
+  .user-badge { display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #e2e8f0; border-radius:999px; padding:5px 12px 5px 5px; }
+  .user-badge .dot { width:24px; height:24px; border-radius:50%; background:#101B34; color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
+  .user-badge .em { font-size:12px; color:#475569; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pill-btn { display:flex; align-items:center; gap:6px; font-size:12px; color:#475569; background:#fff; border:1px solid #e2e8f0; border-radius:999px; padding:7px 14px; cursor:pointer; font-family:inherit; text-decoration:none; transition:background .15s; }
+  .pill-btn:hover { background:#f8fafc; }
 
   .cards-row { display:flex; gap:20px; flex-wrap:wrap; align-items:stretch; justify-content:center; max-width:900px; width:100%; }
   .card {
@@ -36,18 +40,18 @@
     padding: 32px 32px 26px;
     max-width: 420px;
     width: 100%;
-    box-shadow: 0 2px 12px rgba(0,0,0,.08);
-    border-top: 4px solid #0078d4;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    border-top: 3px solid #101B34;
   }
-  .card.vpn { border-top-color: #16794f; }
+  .card.vpn { border-top-color: #2F7B7A; }
   .card-header { font-size: 11px; color: #94a3b8; margin-bottom: 18px; display:flex; align-items:center; justify-content:space-between; }
-  .card-header b { color: #1A2454; font-size: 13px; }
-  .ssid-row { display:flex; align-items:center; justify-content:flex-start; gap:6px; padding: 10px 14px; background:#f8faff; border-radius:8px; margin-bottom:14px; }
-  .ssid-row.vpn { background: #f2faf6; }
+  .card-header b { color: #101B34; font-size: 13px; }
+  .ssid-row { display:flex; align-items:center; justify-content:flex-start; gap:6px; padding: 10px 14px; background:#f8f9fb; border-radius:8px; margin-bottom:14px; }
+  .ssid-row.vpn { background: #f0f6f6; }
   .ssid-label { font-size: 11px; color: #94a3b8; }
-  .ssid-value { font-size: 15px; font-weight: 800; color: #1A2454; letter-spacing: 1px; }
-  .pw-box { background: #1A2454; border-radius: 10px; padding: 16px 20px; margin-bottom: 14px; text-align:center; }
-  .pw-box.vpn { background: #0f3d2e; }
+  .ssid-value { font-size: 15px; font-weight: 800; color: #101B34; letter-spacing: 1px; }
+  .pw-box { background: #101B34; border-radius: 10px; padding: 16px 20px; margin-bottom: 14px; text-align:center; }
+  .pw-box.vpn { background: #1d4a49; }
   .pw-label { font-size: 10px; color: rgba(255,255,255,.5); margin-bottom: 6px; letter-spacing: .5px; }
   .pw-value { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: 2px; word-break: break-all; }
   .pw-value.blurred { filter: blur(6px); cursor: pointer; user-select: none; transition: filter .3s; }
@@ -55,10 +59,10 @@
   .pw-reveal-hint { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 6px; cursor: pointer; }
   .pw-reveal-hint.hidden { display: none; }
   .pw-month { font-size: 11px; color: rgba(255,255,255,.45); margin-top: 5px; }
-  .copy-btn { width:100%; padding: 10px; background: #0078d4; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background .2s; margin-bottom: 14px; }
-  .copy-btn.vpn { background: #16794f; }
-  .copy-btn:hover { background: #106ebe; }
-  .copy-btn.vpn:hover { background: #125f3e; }
+  .copy-btn { width:100%; padding: 10px; background: #101B34; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background .2s; margin-bottom: 14px; }
+  .copy-btn.vpn { background: #2F7B7A; }
+  .copy-btn:hover { background: #1c2d54; }
+  .copy-btn.vpn:hover { background: #266665; }
   .copied { background: #16a34a !important; }
   .notice { font-size: 11.5px; color: #78350f; background: #fef9ec; border-left: 3px solid #f59e0b; border-radius: 6px; padding: 9px 12px; line-height: 1.7; margin-bottom: 16px; }
   .footer-row { display:flex; align-items:center; justify-content:space-between; border-top: 1px solid #f1f5f9; padding-top: 14px; }
@@ -66,14 +70,15 @@
 
   /* ── Admin ── */
   #admin-screen { display:none; width:100%; max-width:640px; margin:0 auto; }
-  .admin-card { background:#fff; border-radius:12px; padding:28px 28px 22px; box-shadow:0 2px 12px rgba(0,0,0,.08); }
-  .admin-title { font-size:15px; font-weight:800; color:#1A2454; margin-bottom:4px; }
+  .admin-card { background:#fff; border-radius:12px; padding:28px 28px 22px; box-shadow:0 2px 12px rgba(0,0,0,.06); }
+  .admin-title { font-size:15px; font-weight:800; color:#101B34; margin-bottom:4px; }
   .admin-sub { font-size:11.5px; color:#94a3b8; margin-bottom:18px; }
   .admin-table { width:100%; border-collapse:collapse; margin-bottom:18px; }
   .admin-table th { text-align:left; font-size:10.5px; color:#94a3b8; padding:6px 8px; border-bottom:1px solid #eef1f5; }
-  .admin-table td { font-size:13px; padding:9px 8px; border-bottom:1px solid #f5f7fa; color:#1A2454; }
+  .admin-table td { font-size:13px; padding:9px 8px; border-bottom:1px solid #f5f7fa; color:#101B34; }
   .admin-table td.pw { font-weight:800; font-family:Consolas, monospace; letter-spacing:.5px; }
-  .admin-badge { display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:5px; background:#eef2ff; color:#4338ca; margin-right:6px; }
+  .admin-badge { display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:5px; background:#eef1f5; color:#101B34; margin-right:6px; }
+  .admin-badge.vpn { background:#E4F1F0; color:#2F7B7A; }
   .btn-back { background:#f1f5f9; color:#334155; border:none; border-radius:8px; padding:9px 16px; font-size:.78rem; font-weight:600; cursor:pointer; font-family:inherit; }
   .btn-back:hover { background:#e2e8f0; }
 </style>
@@ -96,11 +101,16 @@
 <div id="main-screen">
   <div class="top-actions">
     <div class="page-title">STAR TRUCK KOREA</div>
-    <div style="display:flex;align-items:center">
-      <a href="https://aps.startruckkorea.com/" target="_self" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#1A2454;color:#fff;border-radius:8px;padding:8px 16px;font-size:.78rem;font-weight:600;font-family:inherit;margin-right:10px" onmouseover="this.style.background='#111a3d'" onmouseout="this.style.background='#1A2454'"><span>📬</span><span>돌아가기</span></a>
-      <button class="btn-admin" id="btn-admin-open" onclick="openAdmin()" style="display:none">🔑 관리자 보기</button>
+    <div class="pill-group">
+      <div class="user-badge" id="user-badge" style="display:none">
+        <span class="dot" id="user-initial">?</span>
+        <span class="em" id="user-email">—</span>
+      </div>
+      <button class="pill-btn" id="btn-admin-open" onclick="openAdmin()" style="display:none">🔑 관리자 보기</button>
+      <a class="pill-btn" href="https://aps.startruckkorea.com/" target="_self">↗ APS로 돌아가기</a>
     </div>
   </div>
+
 
   <div class="cards-row">
     <!-- WiFi 카드 -->
@@ -155,9 +165,9 @@
         기존 VPN 연결 프로필의 Pre-shared Key를 새 값으로 갱신해주세요.
       </div>
 
-      <a href="#" id="vpn-guide-link" onclick="downloadGuidePdf(event)" style="display:flex;align-items:center;gap:10px;text-decoration:none;background:#f7fdfa;border-left:3px solid #16a34a;border-radius:6px;padding:10px 12px;margin-bottom:16px;color:#14532d;font-size:11.5px;font-weight:600;transition:background .15s" onmouseover="this.style.background='#eefdf4'" onmouseout="this.style.background='#f7fdfa'">
+      <a href="#" id="vpn-guide-link" onclick="downloadGuidePdf(event)" style="display:flex;align-items:center;gap:10px;text-decoration:none;background:#f4f9f9;border-left:3px solid #2F7B7A;border-radius:6px;padding:10px 12px;margin-bottom:16px;color:#1d4a49;font-size:11.5px;font-weight:600;transition:background .15s" onmouseover="this.style.background='#eaf3f2'" onmouseout="this.style.background='#f4f9f9'">
         <span style="flex:1" id="vpn-guide-label">Pre-shared Key 변경 방법 (단계별 가이드)</span>
-        <span style="color:#16a34a;font-weight:800">→</span>
+        <span style="color:#2F7B7A;font-weight:800">→</span>
       </a>
 
     </div>
@@ -176,8 +186,8 @@
         <tr><th>구분</th><th>대상 월</th><th>패스워드</th></tr>
         <tr><td><span class="admin-badge">WiFi</span>NYTO</td><td id="a-wifi-cur-m">—</td><td class="pw" id="a-wifi-cur">—</td></tr>
         <tr><td><span class="admin-badge">WiFi</span>NYTO</td><td id="a-wifi-next-m">—</td><td class="pw" id="a-wifi-next">—</td></tr>
-        <tr><td><span class="admin-badge" style="background:#dcfce7;color:#166534">VPN</span>STK VPN</td><td id="a-vpn-cur-m">—</td><td class="pw" id="a-vpn-cur">—</td></tr>
-        <tr><td><span class="admin-badge" style="background:#dcfce7;color:#166534">VPN</span>STK VPN</td><td id="a-vpn-next-m">—</td><td class="pw" id="a-vpn-next">—</td></tr>
+        <tr><td><span class="admin-badge vpn">VPN</span>STK VPN</td><td id="a-vpn-cur-m">—</td><td class="pw" id="a-vpn-cur">—</td></tr>
+        <tr><td><span class="admin-badge vpn">VPN</span>STK VPN</td><td id="a-vpn-next-m">—</td><td class="pw" id="a-vpn-next">—</td></tr>
       </table>
       <button class="btn-back" onclick="closeAdmin()">← 돌아가기</button>
     </div>
@@ -351,6 +361,13 @@ async function showMain() {
   document.getElementById('login-screen').style.display = 'none';
   const ms = document.getElementById('main-screen');
   ms.style.display = 'flex';
+
+  const userEmail = (user && (user.username || user.name)) || '';
+  if (userEmail) {
+    document.getElementById('user-badge').style.display = 'flex';
+    document.getElementById('user-initial').textContent = userEmail.charAt(0).toUpperCase();
+    document.getElementById('user-email').textContent = userEmail;
+  }
 
   const wifi = getWifiPassword(0);
   document.getElementById('pw-display').textContent = wifi.pw;
