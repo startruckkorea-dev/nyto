@@ -23,7 +23,8 @@
 
   /* ── Main ── */
   #main-screen { display:none; width:100%; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:24px 16px; }
-  .top-actions { width:100%; max-width:900px; display:flex; justify-content:flex-end; margin-bottom:12px; }
+  .top-actions { width:100%; max-width:900px; display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .page-title { font-size: 13px; font-weight: 800; color: #1A2454; letter-spacing: .3px; }
   .btn-admin { background:#1A2454; color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:.78rem; font-weight:600; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; }
   .btn-admin:hover { background:#111a3d; }
 
@@ -94,8 +95,11 @@
 <!-- Main -->
 <div id="main-screen">
   <div class="top-actions">
-    <a href="https://aps.startruckkorea.com/" target="_self" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#1A2454;color:#fff;border-radius:8px;padding:8px 16px;font-size:.78rem;font-weight:600;font-family:inherit;margin-right:10px" onmouseover="this.style.background='#111a3d'" onmouseout="this.style.background='#1A2454'"><span>📬</span><span>돌아가기</span></a>
-    <button class="btn-admin" id="btn-admin-open" onclick="openAdmin()" style="display:none">🔑 관리자 보기</button>
+    <div class="page-title">STAR TRUCK KOREA</div>
+    <div style="display:flex;align-items:center">
+      <a href="https://aps.startruckkorea.com/" target="_self" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#1A2454;color:#fff;border-radius:8px;padding:8px 16px;font-size:.78rem;font-weight:600;font-family:inherit;margin-right:10px" onmouseover="this.style.background='#111a3d'" onmouseout="this.style.background='#1A2454'"><span>📬</span><span>돌아가기</span></a>
+      <button class="btn-admin" id="btn-admin-open" onclick="openAdmin()" style="display:none">🔑 관리자 보기</button>
+    </div>
   </div>
 
   <div class="cards-row">
@@ -103,7 +107,6 @@
     <div class="card">
       <div class="card-header">
         <span>🛜 Guest WiFi</span>
-        <b>STAR TRUCK KOREA</b>
       </div>
 
       <div class="ssid-row">
@@ -125,16 +128,12 @@
         기존 NYTO 연결을 지운(Forget) 다음, 새 패스워드로 다시 연결해주세요.
       </div>
 
-      <div class="footer-row" style="justify-content:flex-start">
-        <span class="footer-copy">문의: <span id="wifi-contact-email">stk_it@hyosung.com</span></span>
-      </div>
     </div>
 
     <!-- STK VPN -->
     <div class="card vpn">
       <div class="card-header">
         <span>🔐 STK VPN</span>
-        <b>STAR TRUCK KOREA</b>
       </div>
 
       <div class="ssid-row vpn">
@@ -161,10 +160,11 @@
         <span style="color:#16a34a;font-weight:800">→</span>
       </a>
 
-      <div class="footer-row" style="justify-content:flex-start">
-        <span class="footer-copy">문의: <span id="vpn-contact-email">stk_it@hyosung.com</span></span>
-      </div>
     </div>
+  </div>
+
+  <div id="shared-contact-row" style="width:100%;max-width:900px;text-align:center;margin-top:16px">
+    <span class="footer-copy">문의: <span id="shared-contact-email">stk_it@hyosung.com</span></span>
   </div>
 
   <!-- Admin -->
@@ -369,8 +369,7 @@ async function showMain() {
   // IT_CONTACT 이메일 + 관리자 여부 로드 (실패해도 화면엔 영향 없도록 별도 처리)
   loadSystemConfig().then(cfg => {
     const contact = cfgVal(cfg, 'IT_CONTACT', { email: 'stk_it@hyosung.com' });
-    document.getElementById('wifi-contact-email').textContent = contact.email || 'stk_it@hyosung.com';
-    document.getElementById('vpn-contact-email').textContent = contact.email || 'stk_it@hyosung.com';
+    document.getElementById('shared-contact-email').textContent = contact.email || 'stk_it@hyosung.com';
 
     _adminEmails = ADMIN_KEYS
       .map(k => (cfg && cfg[k] && cfg[k].email || '').toLowerCase().trim())
@@ -402,6 +401,7 @@ function copyPw(valId, btnId) {
 
 function openAdmin() {
   document.querySelector('.cards-row').style.display = 'none';
+  document.getElementById('shared-contact-row').style.display = 'none';
   document.getElementById('btn-admin-open').style.display = 'none';
   document.getElementById('admin-screen').style.display = 'block';
 
@@ -419,6 +419,7 @@ function openAdmin() {
 function closeAdmin() {
   document.getElementById('admin-screen').style.display = 'none';
   document.querySelector('.cards-row').style.display = 'flex';
+  document.getElementById('shared-contact-row').style.display = 'block';
   document.getElementById('btn-admin-open').style.display = 'inline-flex';
 }
 
