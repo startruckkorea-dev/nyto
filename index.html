@@ -170,7 +170,7 @@
   <div id="admin-screen">
     <div class="admin-card">
       <div class="admin-title">🔑 관리자 — 이번달 · 다음달 패스워드</div>
-      <div class="admin-sub">IT_ADMIN_1~4 등록자만 접근 가능합니다. 화면 캡처/공유 시 주의해주세요.</div>
+      <div class="admin-sub">IT 관리자만 접근 가능하며, 화면 공유에 주의해주시기 바랍니다.</div>
       <table class="admin-table">
         <tr><th>구분</th><th>대상 월</th><th>패스워드</th></tr>
         <tr><td><span class="admin-badge">WiFi</span>NYTO</td><td id="a-wifi-cur-m">—</td><td class="pw" id="a-wifi-cur">—</td></tr>
@@ -207,14 +207,32 @@ function getWifiPassword(offset) {
   return { pw: MONTHS[m] + y + '@' + String(m+1).padStart(2,'0'), m, y };
 }
 // VPN Pre-shared Key: 최대 9자 제한에 맞춰 WiFi와 다른 짧은 포맷 사용 (예: Aug26#08 = 8자)
+// 32비트 FNV-1a 해시 (외부 라이브러리 없이 결정론적 의사난수 생성용)
+function _fnv1a(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+// VPN Pre-shared Key: 최대 9자, 날짜 패턴이 육안으로 드러나지 않도록 해시 기반 의사난수 문자열 생성
+// (내부 고정 시드값 - 노출되어도 무방하나 임의로 바꾸면 전체 매핑이 바뀌므로 변경 시 관리자 공지 필요)
+const VPN_SEED = 'Stk-Vpn-Psk-Seed-v1-8f3a';
 function getVpnPassword(offset) {
   offset = offset || 0;
   const now = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
   let m = now.getUTCMonth() + offset, y = now.getUTCFullYear();
   while (m > 11) { m -= 12; y += 1; }
   while (m < 0) { m += 12; y -= 1; }
-  const yy = String(y).slice(-2);
-  return { pw: MONTHS[m] + yy + '#' + String(m+1).padStart(2,'0'), m, y };
+  const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; // 0/O, 1/l/I 등 헷갈리는 문자 제외
+  let pw = '';
+  let h = _fnv1a(VPN_SEED + ':' + y + '-' + String(m + 1).padStart(2, '0'));
+  for (let i = 0; i < 8; i++) {
+    pw += CHARS[h % CHARS.length];
+    h = _fnv1a(h.toString(36) + ':' + i); // 매 자리마다 새로 해시를 섞어 편향 방지
+  }
+  return { pw, m, y };
 }
 
 async function signIn() {
