@@ -27,8 +27,9 @@
   .btn-admin { background:#1A2454; color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:.78rem; font-weight:600; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; }
   .btn-admin:hover { background:#111a3d; }
 
-  .cards-row { display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start; justify-content:center; max-width:900px; width:100%; }
+  .cards-row { display:flex; gap:20px; flex-wrap:wrap; align-items:stretch; justify-content:center; max-width:900px; width:100%; }
   .card {
+    flex: 1 1 400px;
     background: #fff;
     border-radius: 12px;
     padding: 32px 32px 26px;
@@ -152,6 +153,12 @@
         기존 VPN 연결 프로필의 Pre-shared Key를 새 값으로 갱신해주세요.
       </div>
 
+      <a href="#" id="vpn-guide-link" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;text-decoration:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-bottom:14px;color:#166534;font-size:11.5px;font-weight:600">
+        <span style="font-size:16px">📖</span>
+        <span>Pre-shared Key 변경 방법 보기 (단계별 가이드)</span>
+        <span style="margin-left:auto;color:#16a34a">→</span>
+      </a>
+
       <div class="footer-row">
         <span class="footer-copy">문의: <span id="vpn-contact-email">stk_it@hyosung.com</span></span>
         <a href="https://aps.startruckkorea.com/" target="_self" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#16794f;color:#fff;border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:600;font-family:'Segoe UI',sans-serif;" onmouseover="this.style.background='#125f3e'" onmouseout="this.style.background='#16794f'"><span>📬</span><span>돌아가기</span></a>
@@ -184,6 +191,9 @@ const SITE_PATH = 'startruckkorea.sharepoint.com:/sites/STK-DB:';
 const MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_KO  = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const ADMIN_KEYS = ['IT_ADMIN_1','IT_ADMIN_2','IT_ADMIN_3','IT_ADMIN_4'];
+// TODO: 실제 "Pre-shared Key 변경 방법" 가이드 문서/페이지 URL이 확보되면 이 값만 교체하면 됩니다.
+// 지금은 문의 이메일로 안내 요청하는 mailto 링크로 임시 연결해 둡니다.
+const GUIDE_LINK_URL = 'mailto:stk_it@hyosung.com?subject=' + encodeURIComponent('[STK VPN] Pre-shared Key 변경 방법 문의') + '&body=' + encodeURIComponent('Pre-shared Key 변경 방법을 안내받고 싶습니다.\n\n(가능하시면 사용 중인 PC/VPN 클라이언트 종류를 함께 적어주세요)');
 
 let msal_g = null, user = null, siteId = null, driveId = null, _sysConfig = null, _adminEmails = [];
 
@@ -287,6 +297,12 @@ async function showMain() {
   const vpn = getVpnPassword(0);
   document.getElementById('vpn-display').textContent = vpn.pw;
   document.getElementById('vpn-month-display').textContent = vpn.y + '년 ' + MONTH_KO[vpn.m];
+
+  const guideLink = document.getElementById('vpn-guide-link');
+  if (guideLink) {
+    guideLink.href = GUIDE_LINK_URL;
+    if (GUIDE_LINK_URL.startsWith('mailto:')) guideLink.removeAttribute('target');
+  }
 
   // IT_CONTACT 이메일 + 관리자 여부 로드 (실패해도 화면엔 영향 없도록 별도 처리)
   loadSystemConfig().then(cfg => {
