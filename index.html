@@ -203,7 +203,7 @@
 </div>
 
 <!-- VPN 출시 전 안내 모달 -->
-<div id="vpn-notice-overlay" style="display:none;position:fixed;inset:0;background:rgba(16,27,52,.45);z-index:999;align-items:center;justify-content:center">
+<div id="vpn-notice-overlay" onclick="if(event.target===this) this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(16,27,52,.45);z-index:999;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:14px;padding:32px 30px 26px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center">
     <div style="width:52px;height:52px;border-radius:50%;background:#E4F1F0;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px">🔔</div>
     <div style="font-size:15px;font-weight:800;color:#101B34;margin-bottom:10px">STK VPN 2차 인증키 안내</div>
