@@ -156,8 +156,8 @@
         기존 VPN 연결 프로필의 Pre-shared Key를 새 값으로 갱신해주세요.
       </div>
 
-      <a href="#" id="vpn-guide-link" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;text-decoration:none;background:#f7fdfa;border-left:3px solid #16a34a;border-radius:6px;padding:10px 12px;margin-bottom:16px;color:#14532d;font-size:11.5px;font-weight:600;transition:background .15s" onmouseover="this.style.background='#eefdf4'" onmouseout="this.style.background='#f7fdfa'">
-        <span style="flex:1">Pre-shared Key 변경 방법 (단계별 가이드)</span>
+      <a href="#" id="vpn-guide-link" onclick="downloadGuidePdf(event)" style="display:flex;align-items:center;gap:10px;text-decoration:none;background:#f7fdfa;border-left:3px solid #16a34a;border-radius:6px;padding:10px 12px;margin-bottom:16px;color:#14532d;font-size:11.5px;font-weight:600;transition:background .15s" onmouseover="this.style.background='#eefdf4'" onmouseout="this.style.background='#f7fdfa'">
+        <span style="flex:1" id="vpn-guide-label">Pre-shared Key 변경 방법 (단계별 가이드)</span>
         <span style="color:#16a34a;font-weight:800">→</span>
       </a>
 
@@ -193,9 +193,40 @@ const SITE_PATH = 'startruckkorea.sharepoint.com:/sites/STK-DB:';
 const MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_KO  = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const ADMIN_KEYS = ['IT_ADMIN_1','IT_ADMIN_2','IT_ADMIN_3','IT_ADMIN_4'];
-// TODO: 실제 "Pre-shared Key 변경 방법" 가이드 문서/페이지 URL이 확보되면 이 값만 교체하면 됩니다.
-// 지금은 문의 이메일로 안내 요청하는 mailto 링크로 임시 연결해 둡니다.
-const GUIDE_LINK_URL = 'mailto:stk_it@hyosung.com?subject=' + encodeURIComponent('[STK VPN] Pre-shared Key 변경 방법 문의') + '&body=' + encodeURIComponent('Pre-shared Key 변경 방법을 안내받고 싶습니다.\n\n(가능하시면 사용 중인 PC/VPN 클라이언트 종류를 함께 적어주세요)');
+// STK-DB "문서" 라이브러리 루트에 저장된 가이드 PDF 파일명 (system_config_final.xlsx와 동일 위치)
+const GUIDE_PDF_NAME = 'STK_VPN_PSK_변경가이드.pdf';
+
+// 가이드 PDF를 Graph API로 직접 받아와 다운로드시킴 - SharePoint 원본 URL이
+// 화면(링크 hover, 보기 소스 등)에 전혀 노출되지 않고, 이미 로그인된 세션 권한으로만 접근됨
+async function downloadGuidePdf(e) {
+  if (e) e.preventDefault();
+  const link = document.getElementById('vpn-guide-link');
+  const label = document.getElementById('vpn-guide-label');
+  const originalText = label ? label.textContent : '';
+  if (label) label.textContent = '불러오는 중...';
+  if (link) link.style.pointerEvents = 'none';
+  try {
+    await resolveDbDrive();
+    const t = await token();
+    const res = await fetch(GRAPH + '/drives/' + driveId + '/root:/' + encodeURIComponent(GUIDE_PDF_NAME) + ':/content',
+      { headers: { Authorization: 'Bearer ' + t } });
+    if (!res.ok) throw new Error('가이드 PDF를 찾을 수 없습니다 (' + res.status + ')');
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = GUIDE_PDF_NAME;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+  } catch(err) {
+    alert('가이드 PDF를 불러오지 못했습니다. 잠시 후 다시 시도해주시거나 IT팀으로 문의해주세요.\n(' + err.message + ')');
+  } finally {
+    if (label) label.textContent = originalText;
+    if (link) link.style.pointerEvents = '';
+  }
+}
 
 let msal_g = null, user = null, siteId = null, driveId = null, _sysConfig = null, _adminEmails = [];
 
@@ -269,16 +300,28 @@ async function api(path, method='GET', body=null) {
   return res.status === 204 ? null : res.json();
 }
 
-// ── system_config_final.xlsx 로드 (GW 등과 동일 패턴) ──
-async function loadSystemConfig() {
-  if (_sysConfig) return _sysConfig;
-  try {
+// ── STK-DB 사이트의 문서 드라이브 ID 확보 (설정파일/가이드PDF 등에서 공용으로 사용) ──
+let _dbDriveReady = null;
+async function resolveDbDrive() {
+  if (driveId && siteId) return driveId;
+  if (_dbDriveReady) return _dbDriveReady;
+  _dbDriveReady = (async () => {
     const site = await api('/sites/' + SITE_PATH);
     siteId = site.id;
     const drivesRes = await api('/sites/' + siteId + '/drives');
     let docDrive = (drivesRes.value || []).find(d => ['Documents','문서','Shared Documents'].includes(d.name));
     if (!docDrive && drivesRes.value && drivesRes.value.length) docDrive = drivesRes.value[0];
     driveId = docDrive.id;
+    return driveId;
+  })();
+  return _dbDriveReady;
+}
+
+// ── system_config_final.xlsx 로드 (GW 등과 동일 패턴) ──
+async function loadSystemConfig() {
+  if (_sysConfig) return _sysConfig;
+  try {
+    await resolveDbDrive();
     const t = await token();
     const res = await fetch(GRAPH + '/drives/' + driveId + '/root:/system_config_final.xlsx:/content',
       { headers: { Authorization: 'Bearer ' + t } });
@@ -317,12 +360,6 @@ async function showMain() {
   const vpn = getVpnPassword(0);
   document.getElementById('vpn-display').textContent = vpn.pw;
   document.getElementById('vpn-month-display').textContent = vpn.y + '년 ' + MONTH_KO[vpn.m];
-
-  const guideLink = document.getElementById('vpn-guide-link');
-  if (guideLink) {
-    guideLink.href = GUIDE_LINK_URL;
-    if (GUIDE_LINK_URL.startsWith('mailto:')) guideLink.removeAttribute('target');
-  }
 
   // IT_CONTACT 이메일 + 관리자 여부 로드 (실패해도 화면엔 영향 없도록 별도 처리)
   loadSystemConfig().then(cfg => {
