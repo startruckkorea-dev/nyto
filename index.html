@@ -202,6 +202,7 @@ const SITE_PATH = 'startruckkorea.sharepoint.com:/sites/STK-DB:';
 const MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_KO  = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const ADMIN_KEYS = ['IT_ADMIN_1','IT_ADMIN_2','IT_ADMIN_3','IT_ADMIN_4'];
+const LOG_SYSTEM_NAME = 'STK-NW'; // Logging_data/STK-NW/{날짜}/ 에 기록 (다른 STK 시스템들과 동일 패턴)
 // STK-DB "문서" 라이브러리 루트에 저장된 가이드 PDF 파일명 (system_config_final.xlsx와 동일 위치)
 const GUIDE_PDF_NAME = 'STK_VPN_PSK_변경가이드.pdf';
 
@@ -398,17 +399,75 @@ async function showMain() {
   });
 }
 
+// ── 로깅 (다른 STK 시스템들과 동일한 Logging_data 패턴, STK-DB 드라이브는 resolveDbDrive()로 공유) ──
+const _ensuredLogFolders = new Set();
+async function _ensureLogFolder(folderPath, t) {
+  if (_ensuredLogFolders.has(folderPath)) return true;
+  const parts = folderPath.split('/').filter(Boolean);
+  let cur = '';
+  try {
+    for (const part of parts) {
+      const nextPath = cur ? cur + '/' + part : part;
+      const checkRes = await fetch(`${GRAPH}/drives/${driveId}/root:/${nextPath}`, { headers: { Authorization: 'Bearer ' + t } });
+      if (checkRes.ok) { cur = nextPath; continue; }
+      const parentUrl = cur ? `${GRAPH}/drives/${driveId}/root:/${cur}:/children` : `${GRAPH}/drives/${driveId}/root/children`;
+      const res = await fetch(parentUrl, {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: part, folder: {}, '@microsoft.graph.conflictBehavior': 'fail' }),
+      });
+      if (!res.ok && res.status !== 409) { console.warn('[Log] 폴더 생성 실패:', nextPath, res.status); return false; }
+      cur = nextPath;
+    }
+    _ensuredLogFolders.add(folderPath);
+    return true;
+  } catch (e) { console.warn('[Log] 폴더 확인 실패:', e.message); return false; }
+}
+function logAction(action, detail) {
+  (async () => {
+    try {
+      await resolveDbDrive();
+      const t = await token();
+      const now = new Date(new Date().getTime() + 9 * 3600 * 1000); // KST
+      const p = (n) => String(n).padStart(2, '0');
+      const dateStr = `${now.getUTCFullYear()}-${p(now.getUTCMonth() + 1)}-${p(now.getUTCDate())}`;
+      const timeStr = `${p(now.getUTCHours())}${p(now.getUTCMinutes())}${p(now.getUTCSeconds())}`;
+      const rawUser = (user && (user.username || user.name)) || 'unknown';
+      const userTag = rawUser.split('@')[0].replace(/[^a-zA-Z0-9._-]/g, '_');
+      const rand = Math.random().toString(36).slice(2, 6);
+      const folderPath = `Logging_data/${LOG_SYSTEM_NAME}/${dateStr}`;
+      const folderOk = await _ensureLogFolder(folderPath, t);
+      if (!folderOk) return;
+      const path = `/${folderPath}/${timeStr}_${userTag}_${rand}.json`;
+      const body = JSON.stringify({
+        timestampKST: `${dateStr} ${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())}`,
+        user: rawUser, system: LOG_SYSTEM_NAME, action, detail: detail || {},
+      });
+      await fetch(GRAPH + '/drives/' + driveId + '/root:' + path + ':/content', {
+        method: 'PUT', headers: { Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body,
+      });
+    } catch (e) { console.warn('[Log] 기록 실패(무시됨):', e.message); }
+  })();
+}
+
 function revealPw(valId, hintId) {
   const el = document.getElementById(valId);
   const hint = document.getElementById(hintId);
+  const alreadyRevealed = el && !el.classList.contains('blurred');
   if (el) { el.classList.remove('blurred'); el.onclick = null; el.style.cursor = 'default'; }
   if (hint) hint.classList.add('hidden');
+  if (!alreadyRevealed) {
+    const kind = valId === 'vpn-display' ? 'VPN' : 'WiFi';
+    logAction('패스워드 확인', { 구분: kind });
+  }
 }
 
 function copyPw(valId, btnId) {
   const pw = document.getElementById(valId).textContent;
   const btn = document.getElementById(btnId);
+  const kind = valId === 'vpn-display' ? 'VPN' : 'WiFi';
   navigator.clipboard.writeText(pw).then(() => {
+    logAction('패스워드 복사', { 구분: kind });
     const original = btn.textContent;
     btn.textContent = '✅ 복사됨!';
     btn.classList.add('copied');
