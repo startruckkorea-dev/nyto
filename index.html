@@ -105,7 +105,10 @@
 <!-- Main -->
 <div id="main-screen">
   <div class="top-actions">
-    <div class="page-title"><img src="logo.png" alt="Star Truck Korea"></div>
+    <div class="page-title" style="flex-direction:column;align-items:flex-start;gap:2px">
+      <img src="logo.png" alt="Star Truck Korea">
+      <span style="font-size:10.5px;color:#8A94A6;white-space:nowrap">BU Admin 문의 Email: <span id="shared-contact-email">stk_it@hyosung.com</span></span>
+    </div>
     <div class="pill-group">
       <div class="user-badge" id="user-badge" style="display:none">
         <span class="dot" id="user-initial">?</span>
@@ -176,10 +179,6 @@
       </a>
 
     </div>
-  </div>
-
-  <div id="shared-contact-row" style="width:100%;max-width:900px;text-align:center;margin-top:8px">
-    <span class="footer-copy" style="color:#64748b">문의: <span id="shared-contact-email">stk_it@hyosung.com</span></span>
   </div>
 
   <!-- Admin -->
@@ -325,13 +324,18 @@ async function resolveDbDrive() {
   if (driveId && siteId) return driveId;
   if (_dbDriveReady) return _dbDriveReady;
   _dbDriveReady = (async () => {
-    const site = await api('/sites/' + SITE_PATH);
-    siteId = site.id;
-    const drivesRes = await api('/sites/' + siteId + '/drives');
-    let docDrive = (drivesRes.value || []).find(d => ['Documents','문서','Shared Documents'].includes(d.name));
-    if (!docDrive && drivesRes.value && drivesRes.value.length) docDrive = drivesRes.value[0];
-    driveId = docDrive.id;
-    return driveId;
+    try {
+      const site = await api('/sites/' + SITE_PATH);
+      siteId = site.id;
+      const drivesRes = await api('/sites/' + siteId + '/drives');
+      let docDrive = (drivesRes.value || []).find(d => ['Documents','문서','Shared Documents'].includes(d.name));
+      if (!docDrive && drivesRes.value && drivesRes.value.length) docDrive = drivesRes.value[0];
+      driveId = docDrive.id;
+      return driveId;
+    } catch (e) {
+      _dbDriveReady = null; // 실패하면 캐시를 비워서 다음 호출 때 다시 시도되게 함
+      throw e;
+    }
   })();
   return _dbDriveReady;
 }
@@ -486,9 +490,9 @@ function copyPw(valId, btnId) {
 
 function openAdmin() {
   document.querySelector('.cards-row').style.display = 'none';
-  document.getElementById('shared-contact-row').style.display = 'none';
   document.getElementById('btn-admin-open').style.display = 'none';
   document.getElementById('admin-screen').style.display = 'block';
+  document.querySelector('.top-actions').style.maxWidth = '640px';
 
   const wc = getWifiPassword(0), wn = getWifiPassword(1);
   const vc = getVpnPassword(0), vn = getVpnPassword(1);
@@ -504,8 +508,8 @@ function openAdmin() {
 function closeAdmin() {
   document.getElementById('admin-screen').style.display = 'none';
   document.querySelector('.cards-row').style.display = 'flex';
-  document.getElementById('shared-contact-row').style.display = 'block';
   document.getElementById('btn-admin-open').style.display = 'inline-flex';
+  document.querySelector('.top-actions').style.maxWidth = '900px';
 }
 
 window.addEventListener('load', async () => {
